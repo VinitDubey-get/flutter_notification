@@ -1,78 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'add_reminder_screen.dart';
-import 'notification_service.dart'; // Import your notification service
+import 'package:hive/hive.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Box? _reminderBox;
-
-  @override
-  void initState() {
-    super.initState();
-    _openHiveBox();
-  }
-
-  Future<void> _openHiveBox() async {
-    await Hive.openBox('reminders'); // Ensure box is opened before using
-    setState(() {
-      _reminderBox = Hive.box('reminders');
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (_reminderBox == null) {
-      return Scaffold(
-        appBar: AppBar(title: Text("Medicine Reminders")),
-        body: Center(child: CircularProgressIndicator()), // ✅ Show loader till box is initialized
-      );
-    }
+    var box = Hive.box('reminders'); // ✅ Get reminders from Hive
 
     return Scaffold(
       appBar: AppBar(title: Text("Medicine Reminders")),
-      body: Column(
-        children: [
-          Expanded(
-            child: ValueListenableBuilder(
-              valueListenable: _reminderBox!.listenable(),
-              builder: (context, Box box, _) {
-                if (box.isEmpty) {
-                  return Center(child: Text("No reminders set."));
-                }
-                return ListView.builder(
-                  itemCount: box.length,
-                  itemBuilder: (context, index) {
-                    var reminder = box.getAt(index);
-                    return ListTile(
-                      title: Text(reminder['medicine'] ?? 'Unknown'),
-                      subtitle: Text("Time: ${reminder['time'] ?? 'Unknown'}"),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          box.deleteAt(index);
-                        },
-                      ),
-                    );
-                  },
-                );
-              },
+      body: box.isEmpty
+          ? Center(child: Text("No reminders scheduled!"))
+          : ListView.builder(
+        itemCount: box.length,
+        itemBuilder: (context, index) {
+          var reminder = box.getAt(index); // 🔥 Fetch each reminder
+          return Card(
+            margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            child: ListTile(
+              title: Text(reminder['medicine'], style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              subtitle: Text("Time: ${reminder['time']}"),
+              trailing: Icon(Icons.access_time, color: Colors.blue),
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddReminderScreen()),
           );
         },
-        child: Icon(Icons.add),
       ),
     );
   }

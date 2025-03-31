@@ -4,12 +4,14 @@ import 'package:hive/hive.dart';
 import 'notification_service.dart';
 
 class AddReminderScreen extends StatefulWidget {
+  const AddReminderScreen({super.key});
+
   @override
   _AddReminderScreenState createState() => _AddReminderScreenState();
 }
 
 class _AddReminderScreenState extends State<AddReminderScreen> {
-  TextEditingController _medicineNameController = TextEditingController();
+  final TextEditingController _medicineNameController = TextEditingController();
   TimeOfDay? _selectedTime;
 
   @override
